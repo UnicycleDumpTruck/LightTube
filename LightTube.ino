@@ -11,18 +11,24 @@
 // See http://arduino.cc/en/Reference/SPI "Connections"
 
 // These are the pins used for the breakout example
-#define BREAKOUT_RESET  9      // VS1053 reset pin (output)
-#define BREAKOUT_CS     10     // VS1053 chip select pin (output)
-#define BREAKOUT_DCS    8      // VS1053 Data/command select pin (output)
+//#define BREAKOUT_RESET  9      // VS1053 reset pin (output)
+//#define BREAKOUT_CS     10     // VS1053 chip select pin (output)
+//#define BREAKOUT_DCS    8      // VS1053 Data/command select pin (output)
 // These are the pins used for the music maker shield
+// #define SHIELD_RESET  -1      // VS1053 reset pin (unused!)
+// #define SHIELD_CS     7      // VS1053 chip select pin (output)
+// #define SHIELD_DCS    6      // VS1053 Data/command select pin (output)
+
 #define SHIELD_RESET  -1      // VS1053 reset pin (unused!)
-#define SHIELD_CS     7      // VS1053 chip select pin (output)
-#define SHIELD_DCS    6      // VS1053 Data/command select pin (output)
+#define SHIELD_CS     6      // VS1053 chip select pin (output)
+#define SHIELD_DCS    10      // VS1053 Data/command select pin (output)
 
 // These are common pins between breakout and shield
-#define CARDCS 4     // Card chip select pin
+// #define CARDCS 4     // Card chip select pin
+#define CARDCS 5     // Card chip select pin
 // DREQ should be an Int pin, see http://arduino.cc/en/Reference/attachInterrupt
-#define DREQ 3       // VS1053 Data request, ideally an Interrupt pin
+// #define DREQ 3       // VS1053 Data request, ideally an Interrupt pin
+#define DREQ 9       // VS1053 Data request, ideally an Interrupt pin
 
 Adafruit_VS1053_FilePlayer musicPlayer = 
   // create breakout-example object!
@@ -136,8 +142,6 @@ void setup()
     //Serial.println(F("Playing track 001"));
     //musicPlayer.playFullFile("/track001.mp3");
     // Play another file in the background, REQUIRES interrupts!
-    Serial.println(F("Playing track 002"));
-    musicPlayer.startPlayingFile("/track002.mp3");
 }
 
 // Runs 10 LEDs at a time along strip, cycling through red, green and blue.
@@ -148,6 +152,9 @@ uint32_t color = 0xFF0000; // 'On' color (starts red)
 
 void ledAnimate()
 {
+    Serial.println(F("Playing track 002"));
+    musicPlayer.startPlayingFile("/track002.mp3");
+
     for(int i=0; i<159; i++)
     {
         strip.setPixelColor(head, color); // 'On' pixel at head
@@ -165,11 +172,14 @@ void ledAnimate()
             tail = 0; // Increment, reset tail index
 
         }
+  Serial.println(F("Done Animating LEDs"));
 }
 
 void loop()
 {
-    if (analogRead(AUDIO_SENSE_PIN) > 0.2)
+    int audio_reading = analogRead(AUDIO_SENSE_PIN);
+    Serial.println(audio_reading);
+    if (audio_reading > 20)
     {
         ledAnimate();
     }
