@@ -109,9 +109,9 @@ void setup()
 
     // Audio Setup:
     Serial.begin(9600);
-    while (!Serial) {
-        ; // wait for serial port to connect. Needed for native USB port only
-    }
+    // while (!Serial) {
+    //     ; // wait for serial port to connect. Needed for native USB port only
+    // }
     Serial.println("LightTube, Adafruit VS1053 Simple Test");
 
     if (! musicPlayer.begin()) { // initialise the music player
@@ -178,7 +178,7 @@ void ledAnimate()
 void loop()
 {
     int audio_reading = analogRead(AUDIO_SENSE_PIN);
-    Serial.println(audio_reading);
+    //Serial.println(audio_reading);
     if (audio_reading > 20)
     {
         ledAnimate();
