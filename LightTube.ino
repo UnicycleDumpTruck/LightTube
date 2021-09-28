@@ -80,12 +80,12 @@ void printDirectory(File dir, int numTabs) {
 #include <Adafruit_DotStar.h>
 //#include <SPI.h> // included above
 
-#define NUMPIXELS 58 // Number of LEDs in strip
+#define NUMPIXELS 139 // Scanner 2 has 139 // Number of LEDs in strip
 
 // Here's how to control the LEDs from any two pins:
 #define DATAPIN A1
 #define CLOCKPIN A2
-Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BRG);
+Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BGR);
 // The last parameter is optional -- this is the color data order of the
 // DotStar strip, which has changed over time in different production runs.
 // Your code just uses R,G,B colors, the library then reassigns as needed.
@@ -117,17 +117,18 @@ void setup()
 {
   strip.begin(); // Initialize pins for output
   strip.show();  // Turn all LEDs off ASAP
+  
   pinMode(AUDIO_SENSE_PIN, INPUT);
 
-  RED = strip.Color(0, 255, 0);
-  YELLOW = strip.Color(0, 255, 150);
-  ORANGE = strip.Color(0, 255, 40);
-  GREEN = strip.Color(0,0, 255);
-  TEAL = strip.Color(120, 0, 255);
-  CYAN = strip.Color(255,0, 255);
-  BLUE = strip.Color(255,0, 0);
-  PURPLE = strip.Color(255, 180, 0);
-  MAGENTA = strip.Color(20, 255, 0);
+  RED = strip.Color(255, 0, 0);
+  YELLOW = strip.Color(255, 150, 0);
+  ORANGE = strip.Color(255, 40, 0);
+  GREEN = strip.Color(0, 255, 0);
+  TEAL = strip.Color(0, 255,120);
+  CYAN = strip.Color(0, 255,255);
+  BLUE = strip.Color(0, 0,255);
+  PURPLE = strip.Color(180, 0,255);
+  MAGENTA = strip.Color(255, 0,20);
   OFF = strip.Color(0,0,0);
 
   colors[0] = RED;
@@ -139,51 +140,38 @@ void setup()
   colors[6] = MAGENTA;
   colors[7] = OFF;
 
-
+  // strip.fill(GREEN);
+  // strip.show();
 
   //colors[] = {RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, MAGENTA, OFF};
 
-    // Audio Setup:
-    Serial.begin(9600);
-    // while (!Serial) {
-    //     ; // wait for serial port to connect. Needed for native USB port only
-    // }
-    Serial.println("LightTube, Adafruit VS1053 Simple Test");
+  Serial.begin(9600);
+  // while (!Serial) {
+  //     ; // wait for serial port to connect. Needed for native USB port only
+  // }
+  Serial.println("LightTube, Adafruit VS1053 Simple Test");
 
-    if (! musicPlayer.begin()) { // initialise the music player
-        Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
-        while (1);
-    }
-    Serial.println(F("VS1053 found"));
-    
-    if (!SD.begin(CARDCS)) {
-        Serial.println(F("SD failed, or not present"));
-        while (1);  // don't do anything more
-    }
-
-    // list files
-    printDirectory(SD.open("/"), 0);
-    
-    // Set volume for left, right channels. lower numbers == louder volume!
-    musicPlayer.setVolume(20,20);
-
-    // Timer interrupts are not suggested, better to use DREQ interrupt!
-    //musicPlayer.useInterrupt(VS1053_FILEPLAYER_TIMER0_INT); // timer int
-
-    // If DREQ is on an interrupt pin (on uno, #2 or #3) we can do background
-    // audio playing
-    musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
-    
-    // Play one file, don't return until complete
-    //Serial.println(F("Playing track 001"));
-    //musicPlayer.playFullFile("/track001.mp3");
-    // Play another file in the background, REQUIRES interrupts!
+  if (! musicPlayer.begin()) { // initialise the music player
+      Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
+      while (1);
+  }
+  Serial.println(F("VS1053 found"));
+  
+  if (!SD.begin(CARDCS)) {
+      Serial.println(F("SD failed, or not present"));
+      while (1);  // don't do anything more
+  }
+  
+  // Set volume for left, right channels. lower numbers == louder volume!
+  musicPlayer.setVolume(0,0);
+  musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
 }
 
 // Runs 10 LEDs at a time along strip, cycling through red, green and blue.
 // This requires about 200 mA for all the 'on' pixels + 1 mA per 'off' pixel.
 
-int head = 0, tail = -10;  // Index of first 'on' and 'off' pixels
+#define COLORBLOCKSIZE 15
+int head = 0, tail = -COLORBLOCKSIZE;  // Index of first 'on' and 'off' pixels
 uint32_t color = 0xFF0000; // 'On' color (starts red)
 
 // Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
@@ -192,40 +180,33 @@ void rainbow(int wait) {
   // Color wheel has a range of 65536 but it's OK if we roll over, so
   // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
   // means we'll make 5*65536/256 = 1280 passes through this outer loop:
-  for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
+  long firstWipePixelHue = 0; 
+  for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
+    int pixelHue = firstWipePixelHue - (i * 65536L / strip.numPixels());
+    strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
+    strip.show();
+  }
+  
+
+  for(long firstPixelHue = 0; firstPixelHue < 1 * 65536; firstPixelHue += 256) {
     for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
       // Offset pixel hue by an amount to make one full revolution of the
       // color wheel (range of 65536) along the length of the strip
       // (strip.numPixels() steps):
-      int pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
+      int pixelHue = firstPixelHue - (i * 65536L / strip.numPixels());
       // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
       // optionally add saturation and value (brightness) (each 0 to 255).
       // Here we're using just the single-argument hue variant. The result
       // is passed through strip.gamma32() to provide 'truer' colors
       // before assigning to each pixel:
       strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
+      // strip.show();
     }
     strip.show(); // Update strip with new contents
     delay(wait);  // Pause for a moment
   }
 }
 
-// Theater-marquee-style chasing lights. Pass in a color (32-bit value,
-// a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
-// between frames.
-void theaterChase(uint32_t color, int wait) {
-  for(int a=0; a<10; a++) {  // Repeat 10 times...
-    for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
-      strip.clear();         //   Set all pixels in RAM to 0 (off)
-      // 'c' counts up from 'b' to end of strip in steps of 3...
-      for(int c=b; c<strip.numPixels(); c += 3) {
-        strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
-      }
-      strip.show(); // Update strip with new contents
-      delay(wait);  // Pause for a moment
-    }
-  }
-}
 
 
 void ledAnimate()
@@ -233,7 +214,7 @@ void ledAnimate()
 
   for (int i=0; i<8; i++)
   {
-    for (int j=0; j<(NUMPIXELS + 10); j++)
+    for (int j=0; j<(NUMPIXELS + COLORBLOCKSIZE); j++)
     {
     strip.setPixelColor(head, colors[i]);
     strip.setPixelColor(tail, 0);
@@ -245,7 +226,7 @@ void ledAnimate()
     //if (++tail >= NUMPIXELS)
     //{
       head = 0;
-      tail = -10;
+      tail = -COLORBLOCKSIZE;
       //continue;
     //}
     //}
@@ -277,18 +258,30 @@ void ledAnimate()
   Serial.println(F("Done Animating LEDs"));
 }
 
+void colorWipe(long color, int wait)
+{
+  for (int i=0; i<NUMPIXELS; i++)
+  {
+    strip.setPixelColor(i, color);
+    strip.show();
+    delay(wait);
+  }
+}
+
 void loop()
 {
     int audio_reading = analogRead(AUDIO_SENSE_PIN);
     //Serial.println(audio_reading);
-    if (audio_reading > 20)
+    if (audio_reading > 18)
     {
         Serial.println(F("Playing track 002"));
+        //colorWipe(GREEN, 5);
         musicPlayer.startPlayingFile("/track002.mp3");
-        //rainbow(20);
-        // theaterChase(strip.Color(255,0,0),10);
-        // theaterChase(strip.Color(0,255,0),10);
-        // theaterChase(strip.Color(0,0,255),10);
-        ledAnimate();
+        rainbow(1);
+        colorWipe(OFF, 5);
+        musicPlayer.stopPlaying();
+
+        //ledAnimate();
+        //strip.clear();
     }
 }
