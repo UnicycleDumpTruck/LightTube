@@ -80,11 +80,11 @@ void printDirectory(File dir, int numTabs) {
 #include <Adafruit_DotStar.h>
 //#include <SPI.h> // included above
 
-#define NUMPIXELS 139 // Scanner 2 has 139 // Number of LEDs in strip
+#define NUMPIXELS 158 // 1 has 158, 2 has 139 // Number of LEDs in strip
 
 // Here's how to control the LEDs from any two pins:
-#define DATAPIN A1
-#define CLOCKPIN A2
+#define DATAPIN A2 // Station 2 is A1, Station 1 is A2
+#define CLOCKPIN A1 // Station 2 is A2, Station 1 is A1
 Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BGR);
 // The last parameter is optional -- this is the color data order of the
 // DotStar strip, which has changed over time in different production runs.
@@ -272,6 +272,7 @@ void loop()
 {
     int audio_reading = analogRead(AUDIO_SENSE_PIN);
     //Serial.println(audio_reading);
+    //delay(10);
     if (audio_reading > 18)
     {
         Serial.println(F("Playing track 002"));
