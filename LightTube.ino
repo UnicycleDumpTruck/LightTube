@@ -1,41 +1,26 @@
-// include SPI, MP3 and SD libraries
+#include <SD.h>
 #include <SPI.h>
 #include <Adafruit_VS1053.h>
-#include <SD.h>
+#include <Adafruit_DotStar.h>
 
-// define the pins used
-//#define CLK 13       // SPI Clock, shared with SD card
-//#define MISO 12      // Input data, from VS1053/SD card
-//#define MOSI 11      // Output data, to VS1053/SD card
-// Connect CLK, MISO and MOSI to hardware SPI pins. 
-// See http://arduino.cc/en/Reference/SPI "Connections"
+#define SHIELD_RESET  -1    // VS1053 reset pin (unused!)
+#define SHIELD_CS     6     // VS1053 chip select pin (output)
+#define SHIELD_DCS    10    // VS1053 Data/command select pin (output)
+#define CARDCS 5            // Card chip select pin
+#define DREQ 9              // VS1053 Data request, ideally an Interrupt pin
 
-// These are the pins used for the breakout example
-//#define BREAKOUT_RESET  9      // VS1053 reset pin (output)
-//#define BREAKOUT_CS     10     // VS1053 chip select pin (output)
-//#define BREAKOUT_DCS    8      // VS1053 Data/command select pin (output)
-// These are the pins used for the music maker shield
-// #define SHIELD_RESET  -1      // VS1053 reset pin (unused!)
-// #define SHIELD_CS     7      // VS1053 chip select pin (output)
-// #define SHIELD_DCS    6      // VS1053 Data/command select pin (output)
+#define NUMPIXELS 158 // 1 has 158, 2 has 139 // Number of LEDs in strip
 
-#define SHIELD_RESET  -1      // VS1053 reset pin (unused!)
-#define SHIELD_CS     6      // VS1053 chip select pin (output)
-#define SHIELD_DCS    10      // VS1053 Data/command select pin (output)
+// Here's how to control the LEDs from any two pins:
+#define DATAPIN A2 // Station 2 is A1, Station 1 is A2
+#define CLOCKPIN A1 // Station 2 is A2, Station 1 is A1
+Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BGR);
 
-// These are common pins between breakout and shield
-// #define CARDCS 4     // Card chip select pin
-#define CARDCS 5     // Card chip select pin
-// DREQ should be an Int pin, see http://arduino.cc/en/Reference/attachInterrupt
-// #define DREQ 3       // VS1053 Data request, ideally an Interrupt pin
-#define DREQ 9       // VS1053 Data request, ideally an Interrupt pin
+// Audio Sense Variables
+#define AUDIO_SENSE_PIN A0
 
 Adafruit_VS1053_FilePlayer musicPlayer = 
-  // create breakout-example object!
-  //Adafruit_VS1053_FilePlayer(BREAKOUT_RESET, BREAKOUT_CS, BREAKOUT_DCS, DREQ, CARDCS);
-  // create shield-example object!
   Adafruit_VS1053_FilePlayer(SHIELD_RESET, SHIELD_CS, SHIELD_DCS, DREQ, CARDCS);
-
 
 /// File listing helper
 void printDirectory(File dir, int numTabs) {
@@ -64,6 +49,7 @@ void printDirectory(File dir, int numTabs) {
 }
 
 
+<<<<<<< HEAD
 
 
 
@@ -174,6 +160,8 @@ void setup()
 int head = 0, tail = -COLORBLOCKSIZE;  // Index of first 'on' and 'off' pixels
 uint32_t color = 0xFF0000; // 'On' color (starts red)
 
+=======
+>>>>>>> b9c2406f1d482d57826b1634a8d3ce7d32dc668a
 // Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
 void rainbow(int wait) {
   // Hue of first pixel runs 5 complete loops through the color wheel.
@@ -208,56 +196,6 @@ void rainbow(int wait) {
 }
 
 
-
-void ledAnimate()
-{
-
-  for (int i=0; i<8; i++)
-  {
-    for (int j=0; j<(NUMPIXELS + COLORBLOCKSIZE); j++)
-    {
-    strip.setPixelColor(head, colors[i]);
-    strip.setPixelColor(tail, 0);
-    strip.show();
-    delay(1);
-    head++;
-    tail++;
-    }
-    //if (++tail >= NUMPIXELS)
-    //{
-      head = 0;
-      tail = -COLORBLOCKSIZE;
-      //continue;
-    //}
-    //}
-  }
-
-    // for(int i=0; i<255; i++) // 159
-    // {
-    //   strip.setPixelColor(head, color); // 'On' pixel at head
-    //   strip.setPixelColor(tail, 0);     // 'Off' pixel at tail
-    //   strip.show();                     // Refresh strip
-    //   delay(20);                        // Pause 20 milliseconds (~50 FPS)
-
-    //   if (++head >= NUMPIXELS)
-    //   {                           // Increment head index.  Off end of strip?
-    //       head = 0;               //  Yes, reset head index to start
-    //       if ((color >>= 4) == 0) //  Next color (R->G->B) ... past blue now?
-    //           color = 0xFF0000;   //   Yes, reset to red
-    //   }
-    //   if (++tail >= NUMPIXELS)
-    //   {
-    //     tail = 0; // Increment, reset tail index
-    //   }
-          
-
-    // }
-    // strip.clear();
-    // strip.show();
-
-  Serial.println(F("Done Animating LEDs"));
-}
-
 void colorWipe(long color, int wait)
 {
   for (int i=0; i<NUMPIXELS; i++)
@@ -267,6 +205,37 @@ void colorWipe(long color, int wait)
     delay(wait);
   }
 }
+
+
+void setup()
+{
+  strip.begin(); // Initialize pins for output
+  strip.show();  // Turn all LEDs off ASAP
+  
+  pinMode(AUDIO_SENSE_PIN, INPUT);
+
+  Serial.begin(9600);
+  // while (!Serial) {
+  //     ; // wait for serial port to connect. Needed for native USB port only
+  // }
+  Serial.println("LightTube, Adafruit VS1053 Simple Test");
+
+  if (! musicPlayer.begin()) { // initialise the music player
+      Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
+      while (1);
+  }
+  Serial.println(F("VS1053 found"));
+  
+  if (!SD.begin(CARDCS)) {
+      Serial.println(F("SD failed, or not present"));
+      while (1);  // don't do anything more
+  }
+  
+  // Set volume for left, right channels. lower numbers == louder volume!
+  musicPlayer.setVolume(0,0);
+  musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
+}
+
 
 void loop()
 {
@@ -279,10 +248,7 @@ void loop()
         //colorWipe(GREEN, 5);
         musicPlayer.startPlayingFile("/track002.mp3");
         rainbow(1);
-        colorWipe(OFF, 5);
+        colorWipe(strip.Color(0,0,0), 5);
         musicPlayer.stopPlaying();
-
-        //ledAnimate();
-        //strip.clear();
     }
 }
