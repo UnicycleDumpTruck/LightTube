@@ -15,7 +15,7 @@
 // Where to send packets to!
 //#define DEST_ADDRESS   1
 // change addresses for each client board, any number :)
-#define MY_ADDRESS     90
+#define MY_ADDRESS     85 // Station 1 is 85, Station 2 is 86
 
 // Feather M0 w/Radio
 #define RFM69_CS      A4
@@ -62,9 +62,9 @@ void sendEventData()
 	rf69.waitPacketSent();
 }
 
-void sendGoEvent()
+void sendGoEvent(uint8_t s)
 {
-  eventData.side = queueTail;
+  eventData.side = s;
   eventData.cubeID = MY_ADDRESS;
   eventData.batteryVoltage = 0;
   eventData.counter++;
@@ -154,6 +154,7 @@ void rainbow(int wait) {
     }
     strip.show(); // Update strip with new contents
     delay(wait);  // Pause for a moment
+    Watchdog.reset();
   }
 }
 
@@ -180,7 +181,7 @@ void setup()
   // while (!Serial) {
   //     ; // wait for serial port to connect. Needed for native USB port only
   // }
-  Serial.println("LightTube, Adafruit VS1053 Simple Test");
+  Serial.println("LightTube, Adafruit VS1053, RFM69");
 
   if (! musicPlayer.begin()) { // initialise the music player
       Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
@@ -237,30 +238,25 @@ void setup()
 	eventData.batteryVoltage = 0;
 	eventData.counter = 0;
 
-  // CALIBRATION LOOP
-  /*for(int cal=0; cal<4; cal++) {
-    upAll();
-    delay(3000);
-    restAll();
-    delay(3000);
-  }*/
+  sendGoEvent(0);
 
 	Watchdog.enable(4000);
-
+  Serial.println("Setup Complete");
 }
 
 
 void loop()
 {
     int audio_reading = analogRead(AUDIO_SENSE_PIN);
-    //Serial.println(audio_reading);
-    //delay(10);
+    // Serial.println(audio_reading);
+    // delay(10);
     if (audio_reading > 22)
     {
         Serial.println(F("Playing Sound"));
         //colorWipe(GREEN, 5);
         musicPlayer.startPlayingFile("/track002.mp3");
         rainbow(1);
+        sendGoEvent(1);
         colorWipe(strip.Color(0,0,0), 5);
         musicPlayer.stopPlaying();
     }
