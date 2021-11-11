@@ -23,9 +23,8 @@
                                                                      
 #define MY_ADDRESS    86 // Station 1 is 85, Station 2 is 86
 #define RFM69_CS      A4
-#define RFM69_INT     A5
+#define RFM69_INT     A3
 #define RFM69_RST     11
-#define RFM69_EN      A3 // could just tie this to 3.3v
 #define RF69_FREQ     915.0
 
 
@@ -97,16 +96,17 @@ void sendGoEvent(uint8_t s)
   delay(50);
   rf69.send((uint8_t*)&eventData, sizeof(eventData));
 	rf69.waitPacketSent();
+  delay(50);
   digitalWrite(RFM69_CS, HIGH);
 }
 
 void radioSetup() {
-  //pinMode(RFM69_CS, OUTPUT); // This line caused the audio shield to not be found?
-  pinMode(RFM69_EN, OUTPUT);
+  pinMode(RFM69_CS, OUTPUT); // This line caused the audio shield to not be found?
+  // pinMode(RFM69_EN, OUTPUT);
   pinMode(RFM69_RST, OUTPUT);
 
   digitalWrite(RFM69_CS, LOW);
-  digitalWrite(RFM69_EN, HIGH);
+  //digitalWrite(RFM69_EN, HIGH);
 	digitalWrite(RFM69_RST, LOW);
   delay(50);
 	// manual reset
@@ -137,8 +137,9 @@ void radioSetup() {
 
 	eventData.counter = 0;
 
-  //sendGoEvent(0);
+  sendGoEvent(0);
   digitalWrite(RFM69_CS, HIGH);
+  Serial.println("Radio Setup Complete");
 }
 
 
@@ -150,8 +151,8 @@ void radioSetup() {
 // ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝ ╚═════╝     ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝     
                                                                                    
 void vsAudioSetup() {
-  // pinMode(CARDCS, OUTPUT);
-  // pinMode(SHIELD_CS, OUTPUT);
+  pinMode(CARDCS, OUTPUT);
+  pinMode(SHIELD_CS, OUTPUT);
   
   digitalWrite(SHIELD_CS, LOW);
   delay(50);
@@ -163,10 +164,12 @@ void vsAudioSetup() {
   digitalWrite(SHIELD_CS, HIGH);
   Serial.println(F("VS1053 found"));
   
+  digitalWrite(CARDCS, LOW);
   if (!SD.begin(CARDCS)) {
       Serial.println(F("SD failed, or not present"));
       while (1);  // don't do anything more
   }
+  digitalWrite(CARDCS, HIGH);
   
   // Set volume for left, right channels. lower numbers == louder volume!
   digitalWrite(SHIELD_CS, LOW);
@@ -214,7 +217,7 @@ void rainbow(int wait) {
     }
     strip.show(); // Update strip with new contents
     delay(wait);  // Pause for a moment
-    Watchdog.reset();
+    // Watchdog.reset();
   }
 }
 
@@ -244,18 +247,22 @@ void setup()
   pinMode(AUDIO_SENSE_PIN, INPUT);
 
   Serial.begin(9600);
-  while (!Serial) {
-      ; // wait for serial port to connect. Needed for native USB port only
-  }
+  // while (!Serial) {
+  //     ; // wait for serial port to connect. Needed for native USB port only
+  // }
   Serial.println("LightTube setup function commencing...");
   
-  //radioSetup();
+  // radioSetup();
   
-  delay(100);
+  // delay(100);
 
   vsAudioSetup();
 
-	Watchdog.enable(4000);
+  delay(100);
+
+  radioSetup();
+
+	// Watchdog.enable(4000);
   Serial.println("Setup Complete");
 }
 
@@ -279,11 +286,11 @@ void loop()
         musicPlayer.startPlayingFile("/track002.mp3");
         digitalWrite(SHIELD_CS, HIGH);
         rainbow(1);
-        //sendGoEvent(1);
+        sendGoEvent(1);
         colorWipe(strip.Color(0,0,0), 5);
         digitalWrite(SHIELD_CS, LOW);
         musicPlayer.stopPlaying();
         digitalWrite(SHIELD_CS, HIGH);
     }
-    Watchdog.reset();
+    // Watchdog.reset();
 }
