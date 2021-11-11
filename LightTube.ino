@@ -1,3 +1,10 @@
+//  █████╗ ███╗   ██╗██╗███╗   ███╗ █████╗ ████████╗███████╗    ██╗     ██╗ ██████╗ ██╗  ██╗████████╗████████╗██╗   ██╗██████╗ ███████╗
+// ██╔══██╗████╗  ██║██║████╗ ████║██╔══██╗╚══██╔══╝██╔════╝    ██║     ██║██╔════╝ ██║  ██║╚══██╔══╝╚══██╔══╝██║   ██║██╔══██╗██╔════╝
+// ███████║██╔██╗ ██║██║██╔████╔██║███████║   ██║   █████╗      ██║     ██║██║  ███╗███████║   ██║      ██║   ██║   ██║██████╔╝█████╗  
+// ██╔══██║██║╚██╗██║██║██║╚██╔╝██║██╔══██║   ██║   ██╔══╝      ██║     ██║██║   ██║██╔══██║   ██║      ██║   ██║   ██║██╔══██╗██╔══╝  
+// ██║  ██║██║ ╚████║██║██║ ╚═╝ ██║██║  ██║   ██║   ███████╗    ███████╗██║╚██████╔╝██║  ██║   ██║      ██║   ╚██████╔╝██████╔╝███████╗
+// ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝    ╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝    ╚═════╝ ╚═════╝ ╚══════╝
+                                                                                                                                    
 #include <SD.h>
 #include <SPI.h>
 #include <Adafruit_VS1053.h>
@@ -6,26 +13,59 @@
 #include <RH_RF69.h>
 #include <RHReliableDatagram.h>
 
-#define RF69_FREQ 915.0
 
-// Radio Pins
+// ██████╗  █████╗ ██████╗ ██╗ ██████╗     ██████╗ ██╗███╗   ██╗███████╗
+// ██╔══██╗██╔══██╗██╔══██╗██║██╔═══██╗    ██╔══██╗██║████╗  ██║██╔════╝
+// ██████╔╝███████║██║  ██║██║██║   ██║    ██████╔╝██║██╔██╗ ██║███████╗
+// ██╔══██╗██╔══██║██║  ██║██║██║   ██║    ██╔═══╝ ██║██║╚██╗██║╚════██║
+// ██║  ██║██║  ██║██████╔╝██║╚██████╔╝    ██║     ██║██║ ╚████║███████║
+// ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝     ╚═╝     ╚═╝╚═╝  ╚═══╝╚══════╝
+                                                                     
 #define MY_ADDRESS    86 // Station 1 is 85, Station 2 is 86
 #define RFM69_CS      A4
 #define RFM69_INT     A5
 #define RFM69_RST     11
 #define RFM69_EN      A3 // could just tie this to 3.3v
+#define RF69_FREQ     915.0
 
-// Audio Pins
-#define SHIELD_RESET  -1    // VS1053 reset pin (unused!)
-#define SHIELD_CS     6     // VS1053 chip select pin (output)
-#define SHIELD_DCS    10    // VS1053 Data/command select pin (output)
-#define CARDCS        5     // Card chip select pin
-#define DREQ          9     // VS1053 Data request, ideally an Interrupt pin
+
+//  █████╗ ██╗   ██╗██████╗ ██╗ ██████╗     ██████╗ ██╗███╗   ██╗███████╗
+// ██╔══██╗██║   ██║██╔══██╗██║██╔═══██╗    ██╔══██╗██║████╗  ██║██╔════╝
+// ███████║██║   ██║██║  ██║██║██║   ██║    ██████╔╝██║██╔██╗ ██║███████╗
+// ██╔══██║██║   ██║██║  ██║██║██║   ██║    ██╔═══╝ ██║██║╚██╗██║╚════██║
+// ██║  ██║╚██████╔╝██████╔╝██║╚██████╔╝    ██║     ██║██║ ╚████║███████║
+// ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝ ╚═════╝     ╚═╝     ╚═╝╚═╝  ╚═══╝╚══════╝
+                                                                      
+#define AUDIO_SENSE_PIN A0
+#define SHIELD_RESET    -1    // VS1053 reset pin (unused!)
+#define SHIELD_CS       6     // VS1053 chip select pin (output)
+#define SHIELD_DCS      10    // VS1053 Data/command select pin (output)
+#define CARDCS          5     // Card chip select pin
+#define DREQ            9     // VS1053 Data request, ideally an Interrupt pin
+
+Adafruit_VS1053_FilePlayer musicPlayer = 
+  Adafruit_VS1053_FilePlayer(SHIELD_RESET, SHIELD_CS, SHIELD_DCS, DREQ, CARDCS);
+
+
+// ██╗     ███████╗██████╗     ██████╗ ██╗███╗   ██╗███████╗
+// ██║     ██╔════╝██╔══██╗    ██╔══██╗██║████╗  ██║██╔════╝
+// ██║     █████╗  ██║  ██║    ██████╔╝██║██╔██╗ ██║███████╗
+// ██║     ██╔══╝  ██║  ██║    ██╔═══╝ ██║██║╚██╗██║╚════██║
+// ███████╗███████╗██████╔╝    ██║     ██║██║ ╚████║███████║
+// ╚══════╝╚══════╝╚═════╝     ╚═╝     ╚═╝╚═╝  ╚═══╝╚══════╝
+                                                         
 #define DATAPIN A1 // Station 2 is A1, Station 1 is A2
 #define CLOCKPIN A2 // Station 2 is A2, Station 1 is A1
 #define NUMPIXELS 139 // 1 has 158, 2 has 139 // Number of LEDs in strip
 
 
+// ██████╗  █████╗ ██████╗ ██╗ ██████╗     ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+// ██╔══██╗██╔══██╗██╔══██╗██║██╔═══██╗    ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+// ██████╔╝███████║██║  ██║██║██║   ██║    █████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+// ██╔══██╗██╔══██║██║  ██║██║██║   ██║    ██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+// ██║  ██║██║  ██║██████╔╝██║╚██████╔╝    ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+// ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝     ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+                                                                                                                  
 // Singleton instance of the radio driver
 RH_RF69 rf69(RFM69_CS, RFM69_INT);
 
@@ -39,13 +79,11 @@ struct EvenDataPacket{
   uint8_t side;
 } eventData;
 
-// Dont put this on the stack:
 uint8_t eventBuffer[sizeof(eventData)];
 uint8_t from;
 uint8_t len = sizeof(eventData);
 int16_t packetnum = 0;  // packet counter, we increment per xmission
 uint32_t localCounter = 0;
-
 
 void sendGoEvent(uint8_t s)
 {
@@ -62,17 +100,90 @@ void sendGoEvent(uint8_t s)
   digitalWrite(RFM69_CS, HIGH);
 }
 
+void radioSetup() {
+  //pinMode(RFM69_CS, OUTPUT); // This line caused the audio shield to not be found?
+  pinMode(RFM69_EN, OUTPUT);
+  pinMode(RFM69_RST, OUTPUT);
 
+  digitalWrite(RFM69_CS, LOW);
+  digitalWrite(RFM69_EN, HIGH);
+	digitalWrite(RFM69_RST, LOW);
+  delay(50);
+	// manual reset
+	digitalWrite(RFM69_RST, HIGH);
+	delay(50);
+	digitalWrite(RFM69_RST, LOW);
+	delay(50);
+  
+	if (!rf69_manager.init()) {
+		Serial.println("RFM69 radio init failed");
+		while (1);
+	}
+	Serial.println("RFM69 radio init OK!");
+	// Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM (for low power module)
+	// No encryption
+	if (!rf69.setFrequency(RF69_FREQ)) {
+		Serial.println("setFrequency failed");
+	}
+
+	// If you are using a high power RF69 eg RFM69HW, you *must* set a Tx power with the
+	// ishighpowermodule flag set like this:
+	rf69.setTxPower(20, true);  // range from 14-20 for power, 2nd arg must be true for 69HCW
+
+	// The encryption key has to be the same as the one in the server
+	uint8_t key[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+					0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+	rf69.setEncryptionKey(key);  
+
+	eventData.counter = 0;
+
+  //sendGoEvent(0);
+  digitalWrite(RFM69_CS, HIGH);
+}
+
+
+//  █████╗ ██╗   ██╗██████╗ ██╗ ██████╗     ███████╗███████╗████████╗██╗   ██╗██████╗ 
+// ██╔══██╗██║   ██║██╔══██╗██║██╔═══██╗    ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
+// ███████║██║   ██║██║  ██║██║██║   ██║    ███████╗█████╗     ██║   ██║   ██║██████╔╝
+// ██╔══██║██║   ██║██║  ██║██║██║   ██║    ╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝ 
+// ██║  ██║╚██████╔╝██████╔╝██║╚██████╔╝    ███████║███████╗   ██║   ╚██████╔╝██║     
+// ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝ ╚═════╝     ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝     
+                                                                                   
+void vsAudioSetup() {
+  // pinMode(CARDCS, OUTPUT);
+  // pinMode(SHIELD_CS, OUTPUT);
+  
+  digitalWrite(SHIELD_CS, LOW);
+  delay(50);
+
+  if (! musicPlayer.begin()) { // initialise the music player
+      Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
+      while (1);
+  }
+  digitalWrite(SHIELD_CS, HIGH);
+  Serial.println(F("VS1053 found"));
+  
+  if (!SD.begin(CARDCS)) {
+      Serial.println(F("SD failed, or not present"));
+      while (1);  // don't do anything more
+  }
+  
+  // Set volume for left, right channels. lower numbers == louder volume!
+  digitalWrite(SHIELD_CS, LOW);
+  musicPlayer.setVolume(0,0);
+  musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
+  digitalWrite(SHIELD_CS, HIGH);
+}
+
+// ██╗     ███████╗██████╗     ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+// ██║     ██╔════╝██╔══██╗    ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+// ██║     █████╗  ██║  ██║    █████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+// ██║     ██╔══╝  ██║  ██║    ██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+// ███████╗███████╗██████╔╝    ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+// ╚══════╝╚══════╝╚═════╝     ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+                                                                                                      
 // DotStar Control
 Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BGR);
-
-// Audio Sense Variables
-#define AUDIO_SENSE_PIN A0
-
-Adafruit_VS1053_FilePlayer musicPlayer = 
-  Adafruit_VS1053_FilePlayer(SHIELD_RESET, SHIELD_CS, SHIELD_DCS, DREQ, CARDCS);
-
-
 
 // Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
 void rainbow(int wait) {
@@ -86,7 +197,6 @@ void rainbow(int wait) {
     strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
     strip.show();
   }
-  
 
   for(long firstPixelHue = 0; firstPixelHue < 1 * 65536; firstPixelHue += 256) {
     for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
@@ -108,7 +218,6 @@ void rainbow(int wait) {
   }
 }
 
-
 void colorWipe(long color, int wait)
 {
   for (int i=0; i<NUMPIXELS; i++)
@@ -120,99 +229,44 @@ void colorWipe(long color, int wait)
 }
 
 
+// ███████╗███████╗████████╗██╗   ██╗██████╗ 
+// ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
+// ███████╗█████╗     ██║   ██║   ██║██████╔╝
+// ╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝ 
+// ███████║███████╗   ██║   ╚██████╔╝██║     
+// ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝     
+                                          
 void setup()
 {
   strip.begin(); // Initialize pins for output
   strip.show();  // Turn all LEDs off ASAP
   
   pinMode(AUDIO_SENSE_PIN, INPUT);
-  // pinMode(CARDCS, OUTPUT);
-  // pinMode(SHIELD_CS, OUTPUT);
-  //pinMode(RFM69_CS, OUTPUT); // This line caused the audio shield to not be found?
 
   Serial.begin(9600);
-  // while (!Serial) {
-  //     ; // wait for serial port to connect. Needed for native USB port only
-  // }
-  Serial.println("LightTube, Adafruit VS1053, RFM69");
-  // digitalWrite(SHIELD_CS, LOW);
+  while (!Serial) {
+      ; // wait for serial port to connect. Needed for native USB port only
+  }
+  Serial.println("LightTube setup function commencing...");
   
-
-
-  
-  
-  //   	//--Radio Setup--//
-
-  // digitalWrite(RFM69_CS, LOW);
-  // pinMode(RFM69_EN, OUTPUT);
-  // digitalWrite(RFM69_EN, HIGH);
-	// selectRadio();
-	// pinMode(RFM69_RST, OUTPUT);
-	// digitalWrite(RFM69_RST, LOW);
-
-	// // manual reset
-	// digitalWrite(RFM69_RST, HIGH);
-	// delay(50);
-	// digitalWrite(RFM69_RST, LOW);
-	// delay(50);
-  
-	// if (!rf69_manager.init()) {
-	// 	Serial.println("RFM69 radio init failed");
-	// 	while (1);
-	// }
-	// Serial.println("RFM69 radio init OK!");
-	// // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM (for low power module)
-	// // No encryption
-	// if (!rf69.setFrequency(RF69_FREQ)) {
-	// 	Serial.println("setFrequency failed");
-	// }
-
-	// // If you are using a high power RF69 eg RFM69HW, you *must* set a Tx power with the
-	// // ishighpowermodule flag set like this:
-	// rf69.setTxPower(20, true);  // range from 14-20 for power, 2nd arg must be true for 69HCW
-
-	// // The encryption key has to be the same as the one in the server
-	// uint8_t key[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-	// 				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-	// rf69.setEncryptionKey(key);  
-  // digitalWrite(RFM69_CS, HIGH);
-
-
-	// eventData.cubeID = MY_ADDRESS;
-	// eventData.side = 0;
-	// eventData.batteryVoltage = 0;
-	// eventData.counter = 0;
-
-  // //sendGoEvent(0);
-
-  
-  
-  
+  //radioSetup();
   
   delay(100);
-  if (! musicPlayer.begin()) { // initialise the music player
-      Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
-      while (1);
-  }
-  //digitalWrite(SHIELD_CS, HIGH);
-  Serial.println(F("VS1053 found"));
-  
-  if (!SD.begin(CARDCS)) {
-      Serial.println(F("SD failed, or not present"));
-      while (1);  // don't do anything more
-  }
-  
-  // Set volume for left, right channels. lower numbers == louder volume!
-  digitalWrite(SHIELD_CS, LOW);
-  musicPlayer.setVolume(0,0);
-  musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
-  digitalWrite(SHIELD_CS, HIGH);
+
+  vsAudioSetup();
 
 	Watchdog.enable(4000);
   Serial.println("Setup Complete");
 }
 
 
+// ██╗      ██████╗  ██████╗ ██████╗ 
+// ██║     ██╔═══██╗██╔═══██╗██╔══██╗
+// ██║     ██║   ██║██║   ██║██████╔╝
+// ██║     ██║   ██║██║   ██║██╔═══╝ 
+// ███████╗╚██████╔╝╚██████╔╝██║     
+// ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     
+                                  
 void loop()
 {
     int audio_reading = analogRead(AUDIO_SENSE_PIN);
