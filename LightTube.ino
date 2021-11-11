@@ -3,35 +3,34 @@
 #include <Adafruit_VS1053.h>
 #include <Adafruit_DotStar.h>
 #include <Adafruit_SleepyDog.h>
-
-
-// Radio Includes and variables ----------------------------------
-
 #include <RH_RF69.h>
 #include <RHReliableDatagram.h>
 
 #define RF69_FREQ 915.0
 
-// Where to send packets to!
-//#define DEST_ADDRESS   1
-// change addresses for each client board, any number :)
-#define MY_ADDRESS     86 // Station 1 is 85, Station 2 is 86
-
-// Feather M0 w/Radio
+// Radio Pins
+#define MY_ADDRESS    86 // Station 1 is 85, Station 2 is 86
 #define RFM69_CS      A4
 #define RFM69_INT     A5
 #define RFM69_RST     11
-#define RFM69_EN      A3
+#define RFM69_EN      A3 // could just tie this to 3.3v
+
+// Audio Pins
+#define SHIELD_RESET  -1    // VS1053 reset pin (unused!)
+#define SHIELD_CS     6     // VS1053 chip select pin (output)
+#define SHIELD_DCS    10    // VS1053 Data/command select pin (output)
+#define CARDCS        5     // Card chip select pin
+#define DREQ          9     // VS1053 Data request, ideally an Interrupt pin
+#define DATAPIN A1 // Station 2 is A1, Station 1 is A2
+#define CLOCKPIN A2 // Station 2 is A2, Station 1 is A1
+#define NUMPIXELS 139 // 1 has 158, 2 has 139 // Number of LEDs in strip
+
 
 // Singleton instance of the radio driver
 RH_RF69 rf69(RFM69_CS, RFM69_INT);
 
 // Class to manage message delivery and receipt, using the driver declared above
 RHReliableDatagram rf69_manager(rf69, MY_ADDRESS);
-
-int16_t packetnum = 0;  // packet counter, we increment per xmission
-
-uint32_t localCounter = 0;
 
 struct EvenDataPacket{
   uint32_t counter;
@@ -44,25 +43,9 @@ struct EvenDataPacket{
 uint8_t eventBuffer[sizeof(eventData)];
 uint8_t from;
 uint8_t len = sizeof(eventData);
+int16_t packetnum = 0;  // packet counter, we increment per xmission
+uint32_t localCounter = 0;
 
-
-void selectRadio() {
-  //digitalWrite(LED,HIGH);
-  //digitalWrite(WIZ_CS, HIGH);
-  //delay(100);
-  digitalWrite(RFM69_CS, LOW);
-  //delay(100);
-}
-
-
-//RF communication
-void sendEventData()
-{  
-  digitalWrite(RFM69_CS, LOW);
-  rf69.send((uint8_t*)&eventData, sizeof(eventData));
-	rf69.waitPacketSent();
-  digitalWrite(RFM69_CS, HIGH);
-}
 
 void sendGoEvent(uint8_t s)
 {
@@ -72,25 +55,15 @@ void sendGoEvent(uint8_t s)
   eventData.counter++;
   Serial.print("About to send transmission number: ");
   Serial.println(eventData.counter);      
-  sendEventData();
-  //eventData.side = 0;
+  digitalWrite(RFM69_CS, LOW);
+  delay(50);
+  rf69.send((uint8_t*)&eventData, sizeof(eventData));
+	rf69.waitPacketSent();
+  digitalWrite(RFM69_CS, HIGH);
 }
 
 
-
-
-#define SHIELD_RESET  -1    // VS1053 reset pin (unused!)
-#define SHIELD_CS     6     // VS1053 chip select pin (output)
-#define SHIELD_DCS    10    // VS1053 Data/command select pin (output)
-#define CARDCS        5     // Card chip select pin
-#define DREQ          9     // VS1053 Data request, ideally an Interrupt pin
-
-// DotStar Strip Size
-#define NUMPIXELS 139 // 1 has 158, 2 has 139 // Number of LEDs in strip
-
 // DotStar Control
-#define DATAPIN A1 // Station 2 is A1, Station 1 is A2
-#define CLOCKPIN A2 // Station 2 is A2, Station 1 is A1
 Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BGR);
 
 // Audio Sense Variables
@@ -99,31 +72,6 @@ Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BGR);
 Adafruit_VS1053_FilePlayer musicPlayer = 
   Adafruit_VS1053_FilePlayer(SHIELD_RESET, SHIELD_CS, SHIELD_DCS, DREQ, CARDCS);
 
-// /// File listing helper
-// void printDirectory(File dir, int numTabs) {
-//    while(true) {
-     
-//      File entry =  dir.openNextFile();
-//      if (! entry) {
-//        // no more files
-//        //Serial.println("**nomorefiles**");
-//        break;
-//      }
-//      for (uint8_t i=0; i<numTabs; i++) {
-//        Serial.print('\t');
-//      }
-//      Serial.print(entry.name());
-//      if (entry.isDirectory()) {
-//        Serial.println("/");
-//        printDirectory(entry, numTabs+1);
-//      } else {
-//        // files have sizes, directories do not
-//        Serial.print("\t\t");
-//        Serial.println(entry.size(), DEC);
-//      }
-//      entry.close();
-//    }
-// }
 
 
 // Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
@@ -260,7 +208,6 @@ void setup()
   musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
   digitalWrite(SHIELD_CS, HIGH);
 
-
 	Watchdog.enable(4000);
   Serial.println("Setup Complete");
 }
@@ -274,7 +221,6 @@ void loop()
     if (audio_reading > 22)
     {
         Serial.println(F("Playing Sound"));
-        //colorWipe(GREEN, 5);
         digitalWrite(SHIELD_CS, LOW);
         musicPlayer.startPlayingFile("/track002.mp3");
         digitalWrite(SHIELD_CS, HIGH);
