@@ -94,8 +94,13 @@ void sendGoEvent(uint8_t s)
   Serial.println(eventData.counter);      
   digitalWrite(RFM69_CS, LOW);
   delay(50);
-  rf69.send((uint8_t*)&eventData, sizeof(eventData));
+  bool t_result = rf69.send((uint8_t*)&eventData, sizeof(eventData));
 	rf69.waitPacketSent();
+  if (t_result) {
+    Serial.println("Send true");
+  } else {
+    Serial.println("Send false");
+  }
   delay(50);
   digitalWrite(RFM69_CS, HIGH);
 }
@@ -116,8 +121,9 @@ void radioSetup() {
 	delay(50);
   
 	if (!rf69_manager.init()) {
-		Serial.println("RFM69 radio init failed");
-		while (1);
+		delay(2000);
+    Serial.println("RFM69 radio init failed");
+		//while (1);
 	}
 	Serial.println("RFM69 radio init OK!");
 	// Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM (for low power module)
@@ -252,15 +258,15 @@ void setup()
   // }
   Serial.println("LightTube setup function commencing...");
   
-  // radioSetup();
+  radioSetup();
   
-  // delay(100);
+  delay(100);
 
   vsAudioSetup();
 
-  delay(100);
+  // delay(100);
 
-  radioSetup();
+  // radioSetup();
 
 	// Watchdog.enable(4000);
   Serial.println("Setup Complete");
