@@ -93,7 +93,7 @@ void sendGoEvent(uint8_t s)
   Serial.print("About to send transmission number: ");
   Serial.println(eventData.counter);      
   digitalWrite(RFM69_CS, LOW);
-  delay(50);
+  delay(10);
   bool t_result = rf69.send((uint8_t*)&eventData, sizeof(eventData));
 	rf69.waitPacketSent();
   if (t_result) {
@@ -101,7 +101,7 @@ void sendGoEvent(uint8_t s)
   } else {
     Serial.println("Send false");
   }
-  delay(50);
+  // delay(50);
   digitalWrite(RFM69_CS, HIGH);
 }
 
@@ -143,8 +143,6 @@ void radioSetup() {
 
 	eventData.counter = 0;
 
-  sendGoEvent(0);
-  delay(1000);
   sendGoEvent(0);
   digitalWrite(RFM69_CS, HIGH);
   Serial.println("Radio Setup Complete");
@@ -255,9 +253,9 @@ void setup()
   pinMode(AUDIO_SENSE_PIN, INPUT);
 
   Serial.begin(9600);
-  while (!Serial) {
-      ; // wait for serial port to connect. Needed for native USB port only
-  }
+  // while (!Serial) {
+  //     ; // wait for serial port to connect. Needed for native USB port only
+  // }
   Serial.println("LightTube setup function commencing...");
   
   // radioSetup();
