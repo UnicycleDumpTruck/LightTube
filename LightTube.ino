@@ -144,6 +144,8 @@ void radioSetup() {
 	eventData.counter = 0;
 
   sendGoEvent(0);
+  delay(1000);
+  sendGoEvent(0);
   digitalWrite(RFM69_CS, HIGH);
   Serial.println("Radio Setup Complete");
 }
@@ -253,20 +255,20 @@ void setup()
   pinMode(AUDIO_SENSE_PIN, INPUT);
 
   Serial.begin(9600);
-  // while (!Serial) {
-  //     ; // wait for serial port to connect. Needed for native USB port only
-  // }
+  while (!Serial) {
+      ; // wait for serial port to connect. Needed for native USB port only
+  }
   Serial.println("LightTube setup function commencing...");
   
-  radioSetup();
+  // radioSetup();
   
-  delay(100);
+  // delay(100);
 
   vsAudioSetup();
 
-  // delay(100);
+  delay(100);
 
-  // radioSetup();
+  radioSetup();
 
 	// Watchdog.enable(4000);
   Serial.println("Setup Complete");
@@ -292,11 +294,12 @@ void loop()
         musicPlayer.startPlayingFile("/track002.mp3");
         digitalWrite(SHIELD_CS, HIGH);
         rainbow(1);
-        sendGoEvent(1);
         colorWipe(strip.Color(0,0,0), 5);
         digitalWrite(SHIELD_CS, LOW);
         musicPlayer.stopPlaying();
         digitalWrite(SHIELD_CS, HIGH);
+        sendGoEvent(1);
+
     }
     // Watchdog.reset();
 }
