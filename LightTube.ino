@@ -21,7 +21,7 @@
 // ██║  ██║██║  ██║██████╔╝██║╚██████╔╝    ██║     ██║██║ ╚████║███████║
 // ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝     ╚═╝     ╚═╝╚═╝  ╚═══╝╚══════╝
                                                                      
-#define MY_ADDRESS    86 // Station 1 is 85, Station 2 is 86
+#define MY_ADDRESS    85 // Station 1 is 85, Station 2 is 86
 #define RFM69_CS      A4
 #define RFM69_INT     A3
 #define RFM69_RST     11
@@ -53,9 +53,9 @@ Adafruit_VS1053_FilePlayer musicPlayer =
 // ███████╗███████╗██████╔╝    ██║     ██║██║ ╚████║███████║
 // ╚══════╝╚══════╝╚═════╝     ╚═╝     ╚═╝╚═╝  ╚═══╝╚══════╝
                                                          
-#define DATAPIN A1 // Station 2 is A1, Station 1 is A2
-#define CLOCKPIN A2 // Station 2 is A2, Station 1 is A1
-#define NUMPIXELS 139 // 1 has 158, 2 has 139 // Number of LEDs in strip
+#define DATAPIN A2 // Station 2 is A1, Station 1 is A2
+#define CLOCKPIN A1 // Station 2 is A2, Station 1 is A1
+#define NUMPIXELS 158 // 1 has 158, 2 has 139 // Number of LEDs in strip
 
 
 // ██████╗  █████╗ ██████╗ ██╗ ██████╗     ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
